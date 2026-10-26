@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# handle: runs once per message sent to a desk-notify member. agmsg passes the
+# message as one JSON object on stdin. It shows the sender and the start of
+# the body as a desktop notification and prints nothing, so no reply is sent.
+# On failure, the first stderr line is what the sender gets back.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/_lib.sh"
+
+command -v jq >/dev/null 2>&1 || { echo "jq is not installed" >&2; exit 1; }
+
+msg="$(cat)"
+from="$(printf '%s' "$msg" | jq -r '.from // "someone"')"
+team="$(printf '%s' "$msg" | jq -r '.team // ""')"
+# Only the start of the body, on one line: a notification is a nudge to open
+# the inbox, not a place to read the message.
+text="$(printf '%s' "$msg" | jq -r '(.body // "") | gsub("\\s+"; " ") | if length > 120 then .[0:117] + "..." else . end')"
+
+desk_notify_show "agmsg: $from${team:+ ($team)}" "$text"
