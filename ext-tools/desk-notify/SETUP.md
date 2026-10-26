@@ -1,40 +1,28 @@
-# desk-notify setup
+# desk-notify first steps
 
-Read this when `join <team> <name> ext-tool --tool desk-notify` stops because
-no member config exists yet. desk-notify has no settings and no secrets, so
-there is nothing to ask the user beyond the member name.
+desk-notify has no settings and no secrets, so it joins directly. The one
+thing worth checking is that this machine shows the notifications, which can
+only be seen once it is joined. Walk the user through this:
 
-`<skill-root>` is the agmsg install this file sits under (it is in
-`<skill-root>/plugins/sources/github/.../ext-tools/desk-notify/SETUP.md`);
-`ext-tool.sh` and `join.sh` are in `<skill-root>/scripts/`.
-
-1. Check that this machine can show notifications:
+1. Join it (`desk` is a good member name):
 
    ```
-   bash <skill-root>/scripts/ext-tool.sh setup <team> <name> desk-notify check notifier
+   bash <skill-root>/scripts/join.sh <team> desk ext-tool --tool desk-notify
    ```
 
-   `{"ok":true,"notifier":"osascript"}` (macOS) or `"notify-send"` (Linux)
-   means it can. Otherwise it says why; desk-notify cannot work on this
-   machine, so stop here and tell the user.
+   `<skill-root>` is the agmsg install this file sits under (it is in
+   `<skill-root>/plugins/sources/github/.../ext-tools/desk-notify/SETUP.md`).
 
-2. Save the member config:
-
-   ```
-   bash <skill-root>/scripts/ext-tool.sh setup <team> <name> desk-notify save
-   ```
-
-3. Show a test notification and ask the user whether it appeared:
+2. Send it one message from the user's own member and ask the user whether a
+   notification titled `agmsg: <sender> (<team>)` appeared:
 
    ```
-   bash <skill-root>/scripts/ext-tool.sh setup <team> <name> desk-notify test
+   bash <skill-root>/scripts/send.sh <team> <you> desk "desk-notify test"
    ```
 
-   On macOS, if nothing appeared, the user may need to allow notifications
-   for Script Editor in System Settings > Notifications.
-
-4. Join:
-
-   ```
-   bash <skill-root>/scripts/join.sh <team> <name> ext-tool --tool desk-notify
-   ```
+3. If nothing appeared:
+   - On macOS the notification comes from Script Editor: allow notifications
+     for Script Editor in System Settings > Notifications, then send again.
+   - If the sender got a reply saying there is no desktop notifier, this
+     machine has neither `osascript` (macOS) nor `notify-send` (Linux), and
+     desk-notify cannot work here.

@@ -30,15 +30,16 @@ commit next to it.
 is your agmsg install, normally `~/.agents/skills/agmsg`.
 
 ```
-bash <skill>/scripts/ext-tool.sh setup <team> desk desk-notify save
 bash <skill>/scripts/join.sh <team> desk ext-tool --tool desk-notify
 bash <skill>/scripts/send.sh <team> <you> desk "build finished, ready for review"
 ```
 
+desk-notify has no settings, so it joins directly.
+
 A notification titled `agmsg: <you> (<team>)` appears with the start of the
 message (about 120 characters, on one line). No reply is sent; the full text
-stays in the team's history. `ext-tool.sh setup <team> desk desk-notify test`
-shows a test notification without sending anything.
+stays in the team's history. If the notification cannot be shown, the sender
+gets one reply saying why.
 
 On macOS the notification is shown through Script Editor; if nothing appears,
 allow notifications for Script Editor in System Settings > Notifications.
@@ -59,11 +60,12 @@ agmsg-plugin.conf          # name, description, min_core
 ext-tools/desk-notify/
 ├── tool.conf              # manifest (read as data, never run)
 ├── handle                 # runs once per message; shows the notification
-├── setup                  # status | check notifier | save | test
-├── _lib.sh                # notifier lookup shared by handle and setup
-├── SETUP.md               # setup steps, for an agent setting it up
+├── SETUP.md               # first steps, for an agent setting it up
 └── USAGE.md               # what a sender should expect
 ```
+
+There is no `setup`: a tool without one has no settings, and agmsg joins it
+directly. tool.conf and handle are all an ext-tool needs.
 
 The ext-tool contract (`handle`'s stdin JSON, exit codes, timeouts) and how
 plugins are installed and trusted are in agmsg's

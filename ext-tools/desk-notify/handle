@@ -6,10 +6,6 @@ set -euo pipefail
 # the body as a desktop notification and prints nothing, so no reply is sent.
 # On failure, the first stderr line is what the sender gets back.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck disable=SC1091
-. "$SCRIPT_DIR/_lib.sh"
-
 command -v jq >/dev/null 2>&1 || { echo "jq is not installed" >&2; exit 1; }
 
 msg="$(cat)"
@@ -18,5 +14,17 @@ team="$(printf '%s' "$msg" | jq -r '.team // ""')"
 # Only the start of the body, on one line: a notification is a nudge to open
 # the inbox, not a place to read the message.
 text="$(printf '%s' "$msg" | jq -r '(.body // "") | gsub("\\s+"; " ") | if length > 120 then .[0:117] + "..." else . end')"
+title="agmsg: $from${team:+ ($team)}"
 
-desk_notify_show "agmsg: $from${team:+ ($team)}" "$text"
+# The text goes in as an argument, never spliced into a script, so a message
+# cannot run anything.
+if [ "$(uname -s 2>/dev/null)" = "Darwin" ] && command -v osascript >/dev/null 2>&1; then
+  osascript -e 'on run argv' \
+    -e 'display notification (item 2 of argv) with title (item 1 of argv)' \
+    -e 'end run' "$title" "$text" >/dev/null
+elif command -v notify-send >/dev/null 2>&1; then
+  notify-send -- "$title" "$text"
+else
+  echo "no desktop notifier on this machine (needs osascript on macOS or notify-send on Linux)" >&2
+  exit 1
+fi
